@@ -156,7 +156,9 @@ passport.use(
       callbackURL: "http://localhost:3000/auth/google/secrets",
       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
     },
-    async (accessToken, refreshToken, profile, cb) => {}
+    async (accessToken, refreshToken, profile, cb) => {
+      console.log(profile);
+    }
   )
 );
 
