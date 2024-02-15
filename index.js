@@ -107,6 +107,13 @@ app.post("/register", async (req, res) => {
   }
 });
 
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
 passport.use(
   new Strategy(async function verify(username, password, cb) {
     try {
