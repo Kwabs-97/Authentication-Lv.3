@@ -66,6 +66,21 @@ app.get("/secrets", (req, res) => {
   }
 });
 
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/auth/google/secrets",
+  passport.authenticate("google", {
+    successRedirect: "/secrets",
+    failureRedirect: "/login",
+  })
+);
+
 app.post(
   "/login",
   passport.authenticate("local", {
@@ -107,14 +122,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
-);
-
 passport.use(
+  "local",
   new Strategy(async function verify(username, password, cb) {
     try {
       const result = await db.query("SELECT * FROM users WHERE email = $1 ", [
@@ -158,6 +167,22 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, cb) => {
       console.log(profile);
+      try {
+        const result = await db.query("SELECT * FROM users WHERE email = $1", [
+          profile.email,
+        ]);
+        if (result.rows.length === 0) {
+          const newUser = await db.query(
+            "INSERT INTO users (email, password) VALUES ($1,$2)",
+            [profile.email, profile.id]
+          );
+          return cb(null, newUser.rows[0]);
+        } else {
+          return cb(null, result.rows[0]);
+        }
+      } catch (error) {
+        return cb(error);
+      }
     }
   )
 );
